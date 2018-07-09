@@ -34,6 +34,9 @@ REVIEWS_API_URL = 'https://api.yelp.com/v3/businesses/{}/reviews'
 SEARCH_API_URL = 'https://api.yelp.com/v3/businesses/search'
 TRANSACTION_SEARCH_API_URL = 'https://api.yelp.com/v3/transactions/{}/search'
 
+#: Default Timeout for Requests calls (None = no timeout)
+DEFAULT_TIMEOUT = None
+
 
 class YelpAPI(object):
 
@@ -71,13 +74,14 @@ class YelpAPI(object):
         """
         pass
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, timeout=DEFAULT_TIMEOUT):
         """
             Instantiate a YelpAPI object. An API key from Yelp is required. 
         """
         self._api_key = api_key
         self._yelp_session = requests.Session()
         self._headers = {'Authorization': 'Bearer {}'.format(self._api_key)}
+        self._timeout = timeout
 
     def autocomplete_query(self, **kwargs):
         """
@@ -255,7 +259,7 @@ class YelpAPI(object):
             and check for errors. If all goes well, return the parsed JSON.
         """
         parameters = YelpAPI._get_clean_parameters(kwargs)
-        response = self._yelp_session.get(url, headers=self._headers, params=parameters)
+        response = self._yelp_session.get(url, headers=self._headers, params=parameters, timeout=self._timeout)
         response_json = response.json()  # shouldn't happen, but this will raise a ValueError if the response isn't JSON
 
         # Yelp can return one of many different API errors, so check for one of them.
